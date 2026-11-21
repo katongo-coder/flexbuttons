@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript Interaction & Logic Playground</title>
+  <style>
+    /* Global Styles */
+    * {
+      box-sizing: border-box;
+      transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: #0f172a; /* Dark slate background */
+      color: #e2e8f0;
+      margin: 0;
+      padding: 40px 20px;
+    }
+    .wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    h1 {
+      color: #f59e0b; /* Vibrant JS Amber */
+      margin-bottom: 10px;
+    }
+    header p {
+      color: #94a3b8;
+      font-size: 1.1rem;
+    }
+
+    /* Grid Layout for Cards */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 30px;
+    }
+
+    /* Interactive Card Component */
+    .couple-card {
+      background-color: #1e293b; /* Card dark color */
+      border: 1px solid #334155;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Card Header showing properties */
+    .card-header {
+      background-color: #0f172a;
+      padding: 15px 20px;
+      border-bottom: 1px solid #334155;
+    }
+    .card-header h2 {
+      margin: 0;
+      font-size: 1rem;
+      font-family: monospace;
+      color: #f59e0b; /* Amber accent for JS code titles */
+    }
+
+    /* Split View: Left (Code Blueprint), Right (Live Layout Render) */
+    .split-view {
+      display: flex;
+      flex-grow: 1;
+      min-height: 240px;
+    }
+    .code-blueprint {
+      width: 45%;
+      background-color: #111827;
+      padding: 15px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #38bdf8; /* Sky blue code tokens */
+      border-right: 1px solid #334155;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .code-comment {
+      color: #64748b;
+    }
+    .code-keyword {
+      color: #f43f5e;
+    }
+    .code-string {
+      color: #10b981;
+    }
+
+    .live-render {
+      width: 55%;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #1e293b;
+    }
+
+    /* Interactive UI Components inside renders */
+    .demo-btn {
+      background-color: #f59e0b;
+      color: #0f172a;
+      border: none;
+      padding: 10px 18px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.2);
+    }
+    .demo-btn:hover {
+      background-color: #fbbf24;
+      transform: translateY(-2px);
+    }
+    .demo-btn:active {
+      transform: translateY(0);
+    }
+
+    .panel-display {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 15px;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* ========================================================
+       LIVE PLAYGROUND LAYOUT STYLES:
+       ======================================================== */
+
+    /* 1. DOM Target & Style Injector */
+    .interactive-box {
+      width: 80px;
+      height: 80px;
+      background-color: #38bdf8;
+      border-radius: 8px;
+      margin: 0 auto 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #0f172a;
+    }
+    .interactive-box.active-state {
+      background-color: #ec4899;
+      transform: rotate(45deg);
+      border-radius: 50%;
+      color: white;
+    }
+
+    /* 2. State & Input Sync */
+    .input-sync-container input {
+      width: 100%;
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 10px;
+      color: white;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    .input-sync-container input:focus {
+      border-color: #f59e0b;
+    }
+    .sync-output {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #38bdf8;
+      min-height: 1.2rem;
+    }
+
+    /* 3. Timer Engine */
+    .timer-display {
+      font-family: monospace;
+      font-size: 1.8rem;
+      color: #10b981;
+      margin-bottom: 10px;
+    }
+    .timer-controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    /* 4. List Mapper */
+    .list-wrapper {
+      text-align: left;
+    }
+    .list-input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .list-input-row input {
+      flex-grow: 1;
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 8px;
+      color: white;
+      outline: none;
+    }
+    .list-items {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+    .list-items li {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      padding: 6px 10px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* 5. Persistent Storage Engine */
+    .storage-indicator {
+      font-size: 0.8rem;
+      margin-top: 8px;
+      color: #94a3b8;
+    }
+
+    /* 6. Fetch Simulator */
+    .profile-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #1e293b;
+      border-radius: 6px;
+    }
+    .profile-avatar {
+      width: 40px;
+      height: 40px;
+      background-color: #f59e0b;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #0f172a;
+    }
+    .profile-details h4 {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+    .profile-details p {
+      margin: 0;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <header>
+      <h1>JS Logic & DOM Power Couples</h1>
+      <p>A visual split-view playground showcasing how core JavaScript APIs and DOM operations interface together.</p>
+    </header>
+
+    <div class="grid-container">
+
+      <div class="couple-card">
+        <div class="card-header">
+          <h2>addEventListener + classList.toggle()</h2>
+        </div>
+        <div class="split-view">
+          <div class="code-blueprint">
+            <span class="code-keyword">const</span> box = document.querySelector(<span class="code-string">'.box'</span>);<br>
+            <span class="code-keyword">const</span> btn = document.querySelector(<span class="code-string">'.btn'</span>);<br>
+            <br>
+            btn.addEventListener(<span class="code-string">'click'</span>, () => {<br>
+            &nbsp;&nbsp;<span class="code-comment">// Toggles state & triggers CSS transition</span><br>
+            &nbsp;&nbsp;box.classList.toggle(<span class="code-string">'active-state'</span>);<br>
+            });
+          </div>
+          <div class="live-render">
+            <div class="panel-display">
+              <div id="target-box" class="interactive-box">Static</div>
+              <button id="toggle-btn" class="demo-btn">Toggle State</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="couple-card">
+        <div class="card-header">
+          <h2>input event listener + element.textContent</h2>
+        </div>
+        <div class="split-view">
+          <div class="code-blueprint">
+            <span class="code-keyword">const</span> input = document.querySelector(<span class="code-string">'input'</span>);<br>
+            <span class="code-keyword">const</span> view = document.querySelector(<span class="code-string">'.view'</span>);<br>
+            <br>
+            input.addEventListener(<span class="code-string">'input'</span>, (event) => {<br>
+            &nbsp;&nbsp;<span class="code-comment">// Re-render text instantly on typing</span><br>
+            &nbsp;&nbsp;view.textContent = event.target.value<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;|| <span class="code-string">'Listening...'</span>;<br>
+            });
+          </div>
+          <div class="live-render">
+            <div class="panel-display input-sync-container">
+              <input id="sync-input" type="text" placeholder="Start typing something..." maxlength="30">
+              <div id="sync-output" class="sync-output">Listening...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="couple-card">
+        <div class="card-header">
+          <h2>Array.prototype.push + map().join()</h2>
+        </div>
+        <div class="split-view">
+          <div class="code-blueprint">
+            <span class="code-keyword">const</span> items = [];<br>
+            <br>
+            <span class="code-keyword">function</span> render() {<br>
+            &nbsp;&nbsp;<span class="code-comment">// Dynamic Template string injection</span><br>
+            &nbsp;&nbsp;list.innerHTML = items.map(item => <span class="code-string">`<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;${item}&lt;/li&gt;<br>
+            &nbsp;&nbsp;`</span>).join(<span class="code-string">''</span>);<br>
+            }
+          </div>
+          <div class="live-render">
+            <div class="panel-display list-wrapper">
+              <div class="list-input-row">
+                <input id="item-input" type="text" placeholder="Add custom item..." maxlength="15">
+                <button id="add-btn" class="demo-btn" style="padding: 8px 12px;">Add</button>
+              </div>
+              <ul id="items-list" class="list-items">
+                <li><span style="color:#94a3b8">Your dynamic list items appear here</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="couple-card">
+        <div class="card-header">
+          <h2>setInterval() + clearInterval()</h2>
+        </div>
+        <div class="split-view">
+          <div class="code-blueprint">
+            <span class="code-keyword">let</span> timer = <span class="code-keyword">null</span>;<br>
+            <br>
+            <span class="code-comment">// Start recurring interval engine</span><br>
+            timer = setInterval(() => {<br>
+            &nbsp;&nbsp;seconds++;<br>
+            &nbsp;&nbsp;updateUI();<br>
+            }, 1000);<br>
+            <br>
+            <span class="code-comment">// Destroy active thread</span><br>
+            clearInterval(timer);
+          </div>
+          <div class="live-render">
+            <div class="panel-display">
+              <div id="stopwatch-display" class="timer-display">00.0s</div>
+              <div class="timer-controls">
+                <button id="timer-start" class="demo-btn">Start</button>
+                <button id="timer-stop" class="demo-btn" style="background-color: #f43f5e; color: white;">Stop</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="couple-card">
+        <div class="card-header">
+          <h2>localStorage + JSON.stringify() / parse()</h2>
+        </div>
+        <div class="split-view">
+          <div class="code-blueprint">
+            <span class="code-comment">// Save complex JS objects to storage</span><br>
+            <span class="code-keyword">const</span> data = { score: 42 };<br>
+            localStorage.setItem(<span class="code-string">'save'</span>,<br>
+            &nbsp;&nbsp;JSON.stringify(data)<br>
+            );<br>
+            <br>
+            <span class="code-comment">// Retrieve and reconstruct</span><br>
+            <span class="code-keyword">const</span> saved = JSON.parse(<br>
+            &nbsp;&nbsp;localStorage.getItem(<span class="code-string">'save'</span>)<br>
+            );
+          </div>
+          <div class="live-render">
+            <div class="panel-display">
+              <button id="increment-score" class="demo-btn">Click to Increase Score</button>
+              <div id="score-display" style="font-size: 1.2rem; margin-top: 10px; font-weight: bold; color: #38bdf8;">Score: 0</div>
+              <div id="storage-status" class="storage-indicator">Stored value: None</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="couple-card">
+        <div class="card-header">
+          <h2>async/await + Promise Mocking</h2>
+        </div>
+        <div class="split-view">
+          <div class="code-blueprint">
+            <span class="code-keyword">async function</span> fetchUser() {<br>
+            &nbsp;&nbsp;loading.textContent = <span class="code-string">'Loading...'</span>;<br>
+            &nbsp;&nbsp;<span class="code-keyword">try</span> {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// Await thread lock release</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">const</span> user = <span class="code-keyword">await</span> mockAPI();<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;renderProfile(user);<br>
+            &nbsp;&nbsp;} <span class="code-keyword">catch</span> (err) { ... }<br>
+            }
+          </div>
+          <div class="live-render">
+            <div class="panel-display">
+              <button id="fetch-user-btn" class="demo-btn">Get Random Member</button>
+              <div id="user-profile-render">
+                <p style="font-size: 0.8rem; color: #64748b; margin-top:12px;">Click to simulate an asynchronous API network thread.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // 1. DOM Target & Style Injector
+    const targetBox = document.getElementById('target-box');
+    const toggleBtn = document.getElementById('toggle-btn');
+    toggleBtn.addEventListener('click', () => {
+      const isActive = targetBox.classList.toggle('active-state');
+      targetBox.textContent = isActive ? 'Active' : 'Static';
+    });
+
+    // 2. State & Input Sync
+    const syncInput = document.getElementById('sync-input');
+    const syncOutput = document.getElementById('sync-output');
+    syncInput.addEventListener('input', (e) => {
+      syncOutput.textContent = e.target.value.trim() || 'Listening...';
+    });
+
+    // 3. Dynamic Array Rendering
+    const itemInput = document.getElementById('item-input');
+    const addBtn = document.getElementById('add-btn');
+    const itemsList = document.getElementById('items-list');
+    const tasks = [];
+
+    function renderList() {
+      if (tasks.length === 0) {
+        itemsList.innerHTML = '<li><span style="color:#94a3b8">Your dynamic list items appear here</span></li>';
+        return;
+      }
+      itemsList.innerHTML = tasks.map((task, idx) => `
+        <li>
+          <span>${task}</span>
+          <span style="cursor:pointer; color:#f43f5e;" onclick="deleteTask(${idx})">✕</span>
+        </li>
+      `).join('');
+    }
+
+    addBtn.addEventListener('click', () => {
+      const val = itemInput.value.trim();
+      if (val) {
+        tasks.push(val);
+        itemInput.value = '';
+        renderList();
+      }
+    });
+
+    window.deleteTask = function(index) {
+      tasks.splice(index, 1);
+      renderList();
+    };
+
+    // 4. Async Timing Engines
+    let timerId = null;
+    let milliseconds = 0;
+    const stopwatchDisplay = document.getElementById('stopwatch-display');
+    const timerStart = document.getElementById('timer-start');
+    const timerStop = document.getElementById('timer-stop');
+
+    function updateStopwatch() {
+      milliseconds += 100;
+      stopwatchDisplay.textContent = `${(milliseconds / 1000).toFixed(1)}s`;
+    }
+
+    timerStart.addEventListener('click', () => {
+      if (!timerId) {
+        timerId = setInterval(updateStopwatch, 100);
+        timerStart.textContent = 'Running';
+      }
+    });
+
+    timerStop.addEventListener('click', () => {
+      if (timerId) {
+        clearInterval(timerId);
+        timerId = null;
+        timerStart.textContent = 'Resume';
+      }
+    });
+
+    // 5. Persistence Storage Engines
+    const incrementScoreBtn = document.getElementById('increment-score');
+    const scoreDisplay = document.getElementById('score-display');
+    const storageStatus = document.getElementById('storage-status');
+    
+    // Load initial local state
+    let state = { score: 0 };
+    try {
+      const savedState = localStorage.getItem('js-playground-score');
+      if (savedState) {
+        state = JSON.parse(savedState);
+        scoreDisplay.textContent = `Score: ${state.score}`;
+        storageStatus.textContent = `Stored value: {"score": ${state.score}}`;
+      }
+    } catch(e) {}
+
+    incrementScoreBtn.addEventListener('click', () => {
+      state.score += 1;
+      scoreDisplay.textContent = `Score: ${state.score}`;
+      const serialized = JSON.stringify(state);
+      localStorage.setItem('js-playground-score', serialized);
+      storageStatus.textContent = `Stored value: ${serialized}`;
+    });
+
+    // 6. Async Fetch API Simulator
+    const fetchUserBtn = document.getElementById('fetch-user-btn');
+    const userProfileRender = document.getElementById('user-profile-render');
+    const mockUsers = [
+      { name: 'Satoshi Nakamoto', role: 'Crypto Innovator', initials: 'SN' },
+      { name: 'Ada Lovelace', role: 'Pioneer Programmer', initials: 'AL' },
+      { name: 'Alan Turing', role: 'System Architect', initials: 'AT' },
+      { name: 'Grace Hopper', role: 'Compiler Creator', initials: 'GH' }
+    ];
+
+    async function simulateAPI() {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const randomIndex = Math.floor(Math.random() * mockUsers.length);
+          resolve(mockUsers[randomIndex]);
+        }, 1200); // 1.2 second simulated roundtrip ping
+      });
+    }
+
+    fetchUserBtn.addEventListener('click', async () => {
+      userProfileRender.innerHTML = '<div style="font-size:0.85rem; color:#f59e0b; margin-top:10px;">Simulating Network Request...</div>';
+      fetchUserBtn.disabled = true;
+
+      try {
+        const user = await simulateAPI();
+        userProfileRender.innerHTML = `
+          <div class="profile-card">
+            <div class="profile-avatar">${user.initials}</div>
+            <div class="profile-details">
+              <h4>${user.name}</h4>
+              <p>${user.role}</p>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        userProfileRender.innerHTML = '<div style="color:#f43f5e;">Request timed out</div>';
+      } finally {
+        fetchUserBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
